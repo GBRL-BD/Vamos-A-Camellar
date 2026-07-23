@@ -358,12 +358,23 @@ async function handleRegister(event){
   const confirm=document.getElementById('register-confirm-password').value;
   if(password!==confirm){authMessage('register-message','Las contraseñas no coinciden.','error');return;}
   authMessage('register-message','Creando tu cuenta…');
-  const {data,error}=await window.emprendeSupabase.auth.signUp({email,password});
-  if(error){authMessage('register-message',friendlyAuthError(error),'error');return;}
-  if(data.session){
-    await enterAuthenticatedApp();
-  }else{
-    authMessage('register-message','Cuenta creada. Revisa tu correo para confirmar la cuenta antes de iniciar sesión.','success');
+  try{
+    const result=await window.emprendeSupabase.auth.signUp({email,password});
+    const data=result?.data||{};
+    const error=result?.error||null;
+    if(error){
+      console.error('Supabase signUp error:',error);
+      authMessage('register-message',friendlyAuthError(error),'error');
+      return;
+    }
+    if(data.session){
+      await enterAuthenticatedApp();
+    }else{
+      authMessage('register-message','Cuenta creada. Revisa tu correo para confirmar la cuenta antes de iniciar sesión.','success');
+    }
+  }catch(error){
+    console.error('Unexpected registration error:',error);
+    authMessage('register-message',friendlyAuthError(error),'error');
   }
 }
 
@@ -379,12 +390,18 @@ async function handleGoogleLogin(){
 }
 
 function friendlyAuthError(error){
-  const msg=(error?.message||'').toLowerCase();
-  if(msg.includes('invalid login credentials'))return 'El correo o la contraseña no son correctos.';
-  if(msg.includes('email not confirmed'))return 'Primero confirma tu correo electrónico.';
-  if(msg.includes('user already registered'))return 'Ya existe una cuenta con este correo.';
-  if(msg.includes('password should be at least'))return 'La contraseña debe tener al menos 6 caracteres.';
-  return error?.message||'Ocurrió un error. Intenta de nuevo.';
+  const raw=typeof error==='string'?error:(error?.message||error?.error_description||error?.error||'');
+  const msg=String(raw).trim();
+  const lower=msg.toLowerCase();
+  if(!msg)return 'Supabase no devolvió un mensaje de error. Revisa la configuración de autenticación e inténtalo de nuevo.';
+  if(lower.includes('invalid login credentials'))return 'El correo o la contraseña no son correctos.';
+  if(lower.includes('email not confirmed'))return 'Primero confirma tu correo electrónico.';
+  if(lower.includes('user already registered')||lower.includes('already registered'))return 'Ya existe una cuenta con este correo.';
+  if(lower.includes('password should be at least'))return 'La contraseña debe tener al menos 6 caracteres.';
+  if(lower.includes('signup is disabled')||lower.includes('email signups are disabled'))return 'El registro por correo está desactivado en Supabase.';
+  if(lower.includes('rate limit'))return 'Se alcanzó el límite temporal de registros. Espera unos minutos e inténtalo de nuevo.';
+  if(lower.includes('failed to fetch')||lower.includes('networkerror'))return 'No se pudo conectar con Supabase. Revisa tu conexión a internet.';
+  return msg;
 }
 
 async function enterAuthenticatedApp(){
@@ -470,28 +487,7 @@ async function loadRemoteOpportunities(){
     const remote=oppRes.data.map(o=>{
       const remoteMissions=(byOpp[o.id]||[]).slice(0,7);
       const fallback=localById[o.id]?.missions || [];
-      // Siempre construimos una ruta de hasta 7 días. El CMS es la fuente principal;
-      // si todavía no hay siete misiones cargadas, usamos las locales y completamos
-      // los días restantes con pasos de validación para no dejar una ruta incompleta.
-      const seed=[...remoteMissions];
-      for(const m of fallback){
-        if(seed.length>=7) break;
-        if(!seed.some(x=>String(x.id)===String(m.id))) seed.push(m);
-      }
-      const generic=[
-        {title:'Define tu siguiente paso',description:'Convierte lo que aprendiste en una acción concreta para hoy.',tip:'Hazlo pequeño y medible.'},
-        {title:'Haz una prueba real',description:'Prueba tu idea, servicio o propuesta con una persona real.',tip:'Una prueba real enseña más que seguir imaginando.'},
-        {title:'Pide una opinión',description:'Pregunta qué funcionó y qué podrías mejorar.',tip:'Escucha antes de cambiarlo todo.'},
-        {title:'Ajusta tu propuesta',description:'Mejora tu propuesta usando lo que descubriste.',tip:'No necesitas perfección; necesitas avanzar.'},
-        {title:'Da seguimiento',description:'Vuelve a contactar a la persona o cliente que mostró interés.',tip:'El seguimiento convierte una oportunidad en progreso.'},
-        {title:'Mide tu avance',description:'Registra qué hiciste, qué resultado obtuviste y qué sigue.',tip:'Lo que se mide se puede mejorar.'},
-        {title:'Elige tu próximo movimiento',description:'Decide cuál será tu siguiente acción después de esta ruta.',tip:'La ruta termina, pero tu avance continúa.'}
-      ];
-      while(seed.length<7){
-        const g=generic[seed.length];
-        seed.push({id:`${o.id}_day_${seed.length+1}`,title:g.title,description:g.description,tip:g.tip,type:'text',placeholder:'¿Qué hiciste y qué aprendiste?',options:[]});
-      }
-      const missions=seed.slice(0,7);
+      const missions=remoteMissions.length ? remoteMissions : fallback.slice(0,7);
       return {
         id:String(o.id),
         name:o.title||o.name||'Oportunidad',

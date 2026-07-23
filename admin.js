@@ -155,11 +155,8 @@ async function toggleMission(id,data){
  await client.from('missions').update({is_active:x.is_active===false}).eq('id',id); loadMissions();
 }
 async function changeRole(id,role){
- const rpc=await client.rpc('admin_set_user_role',{target_user_id:id,new_role:role});
- if(!rpc.error){ await loadUsers(); return; }
- // Compatibilidad con instalaciones antiguas que todavía no tienen la función RPC.
- const direct=await client.from('profiles').update({role}).eq('id',id);
- if(direct.error) alert(rpc.error.message||direct.error.message); else loadUsers();
+ const {error}=await client.from('profiles').update({role}).eq('id',id);
+ if(error)alert(error.message); else loadUsers();
 }
 async function reviewEvidence(id,status){
  let {error}=await client.from('mission_evidence').update({verification_status:status}).eq('id',id); if(error){ const r=await client.from('mission_submissions').update({status}).eq('id',id); error=r.error; }

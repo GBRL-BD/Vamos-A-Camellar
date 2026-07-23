@@ -1,7 +1,7 @@
 {
-  "name": "Vamos a Camellar",
-  "short_name": "Camellar",
-  "description": "¿No sabes qué hacer? Vamos a camellar. Encuentra tu próximo paso.",
+  "name": "Emprende",
+  "short_name": "Emprende",
+  "description": "Encuentra una oportunidad y empieza tu camino.",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#f7f8fc",
