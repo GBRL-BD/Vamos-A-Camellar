@@ -378,27 +378,45 @@ async function handleRegister(event){
   }
 }
 
-async function handleGoogleLogin(){
-  if(!window.emprendeSupabase){
-    authMessage('login-message','No se pudo conectar con Supabase.','error'); return;
-  }
-  const {error}=await window.emprendeSupabase.auth.signInWithOAuth({
-    provider:'google',
-    options:{redirectTo:window.location.origin+window.location.pathname}
-  });
-  if(error)authMessage('login-message',friendlyAuthError(error),'error');
+function getOAuthRedirectUrl(){
+  // URL pública única de retorno de la aplicación.
+  // Esto evita que OAuth cambie de callback según la ruta o parámetros de la URL.
+  const configured = window.EMPRENDE_OAUTH_REDIRECT_URL;
+  if(configured && /^https?:\\/\\//i.test(configured)) return configured;
+  return `${window.location.origin}${window.location.pathname}`;
 }
 
-async function handleFacebookLogin(){
+async function startOAuth(provider){
   if(!window.emprendeSupabase){
-    authMessage('login-message','No se pudo conectar con Supabase.','error'); return;
+    authMessage('login-message','No se pudo conectar con Supabase.','error');
+    return;
   }
-  const {error}=await window.emprendeSupabase.auth.signInWithOAuth({
-    provider:'facebook',
-    options:{redirectTo:window.location.origin+window.location.pathname}
-  });
-  if(error)authMessage('login-message',friendlyAuthError(error),'error');
+
+  const redirectTo=getOAuthRedirectUrl();
+  authMessage('login-message',`Conectando con ${provider==='google'?'Google':'Facebook'}…`);
+
+  try{
+    const {error}=await window.emprendeSupabase.auth.signInWithOAuth({
+      provider,
+      options:{
+        redirectTo,
+        // Mantiene el flujo en la misma página después del callback.
+        skipBrowserRedirect:false
+      }
+    });
+
+    if(error){
+      console.error(`OAuth ${provider} error:`,error);
+      authMessage('login-message',friendlyAuthError(error),'error');
+    }
+  }catch(error){
+    console.error(`Unexpected OAuth ${provider} error:`,error);
+    authMessage('login-message',friendlyAuthError(error),'error');
+  }
 }
+
+async function handleGoogleLogin(){ return startOAuth('google'); }
+async function handleFacebookLogin(){ return startOAuth('facebook'); }
 
 function friendlyAuthError(error){
   const raw=typeof error==='string'?error:(error?.message||error?.error_description||error?.error||'');
@@ -411,6 +429,9 @@ function friendlyAuthError(error){
   if(lower.includes('password should be at least'))return 'La contraseña debe tener al menos 6 caracteres.';
   if(lower.includes('signup is disabled')||lower.includes('email signups are disabled'))return 'El registro por correo está desactivado en Supabase.';
   if(lower.includes('rate limit'))return 'Se alcanzó el límite temporal de registros. Espera unos minutos e inténtalo de nuevo.';
+  if(lower.includes('redirect_uri_mismatch')||lower.includes('redirect uri mismatch'))return 'Google rechazó la URL de retorno. En Google Cloud debes autorizar la URL de callback de Supabase indicada en la guía incluida en el ZIP.';
+  if(lower.includes('provider is not enabled')||lower.includes('unsupported provider'))return 'Este proveedor todavía no está habilitado en Supabase.';
+  if(lower.includes('facebook'))return 'Facebook rechazó la autenticación. Revisa la configuración de OAuth de Facebook y la URL de callback de Supabase.';
   if(lower.includes('failed to fetch')||lower.includes('networkerror'))return 'No se pudo conectar con Supabase. Revisa tu conexión a internet.';
   return msg;
 }
