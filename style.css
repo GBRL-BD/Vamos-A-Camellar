@@ -91,3 +91,7 @@
 .moderation-row span{float:right;opacity:.7}
 .moderation-row p{margin:6px 0 0;opacity:.8}
 @media(max-width:600px){.moderation-grid{grid-template-columns:1fr}}
+
+
+/* Inicio de sesión con Facebook */
+.auth-facebook{margin-top:10px;}

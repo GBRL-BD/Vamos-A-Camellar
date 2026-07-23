@@ -389,6 +389,17 @@ async function handleGoogleLogin(){
   if(error)authMessage('login-message',friendlyAuthError(error),'error');
 }
 
+async function handleFacebookLogin(){
+  if(!window.emprendeSupabase){
+    authMessage('login-message','No se pudo conectar con Supabase.','error'); return;
+  }
+  const {error}=await window.emprendeSupabase.auth.signInWithOAuth({
+    provider:'facebook',
+    options:{redirectTo:window.location.origin+window.location.pathname}
+  });
+  if(error)authMessage('login-message',friendlyAuthError(error),'error');
+}
+
 function friendlyAuthError(error){
   const raw=typeof error==='string'?error:(error?.message||error?.error_description||error?.error||'');
   const msg=String(raw).trim();
@@ -424,6 +435,8 @@ async function initAuthentication(){
   document.getElementById('show-login-button')?.addEventListener('click',()=>switchAuthView('login'));
   document.getElementById('google-login-button')?.addEventListener('click',handleGoogleLogin);
   document.getElementById('google-register-button')?.addEventListener('click',handleGoogleLogin);
+  document.getElementById('facebook-login-button')?.addEventListener('click',handleFacebookLogin);
+  document.getElementById('facebook-register-button')?.addEventListener('click',handleFacebookLogin);
 
   const {data:{session}}=await window.emprendeSupabase.auth.getSession();
   if(session){
