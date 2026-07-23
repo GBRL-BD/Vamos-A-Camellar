@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="theme-color" content="#6c63ff">
+    <link rel="manifest" href="manifest.json">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Emprende</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+    <script src="backend-client.js"></script>
+    <script src="profile-moderation.js"></script>
+<script defer src="script.js"></script>
+</head>
+<body>
+<main id="app">
+<section id="auth-screen" class="screen active">
+<div class="auth-shell">
+  <div class="auth-brand"><div class="logo">✦</div><p class="eyebrow">EMPRENDE</p></div>
+  <div class="auth-card">
+    <div id="auth-login-view">
+      <p class="eyebrow">BIENVENIDO DE VUELTA</p>
+      <h1>Entra para continuar</h1>
+      <p class="auth-description">Tu cuenta permite guardar tu progreso, identificarte y proteger tu perfil.</p>
+      <button id="google-login-button" class="secondary-button auth-google">🌐 Continuar con Google</button>
+      <button id="facebook-login-button" class="secondary-button auth-facebook">📘 Continuar con Facebook</button>
+      <div class="auth-divider"><span>o continúa con correo</span></div>
+      <form id="login-form" class="auth-form">
+        <label>Correo electrónico<input id="login-email" type="email" autocomplete="email" required></label>
+        <label>Contraseña<input id="login-password" type="password" autocomplete="current-password" required></label>
+        <button type="submit" class="primary-button">Iniciar sesión</button>
+      </form>
+      <p id="login-message" class="auth-message"></p>
+      <button id="show-register-button" class="auth-link-button">¿No tienes una cuenta? Crear cuenta</button>
+    </div>
+    <div id="auth-register-view" class="hidden">
+      <p class="eyebrow">CREAR CUENTA</p>
+      <h1>Empieza tu camino</h1>
+      <p class="auth-description">Crea tu cuenta para guardar tu progreso y tener un perfil único.</p>
+      <button id="google-register-button" class="secondary-button auth-google">🌐 Registrarme con Google</button>
+      <button id="facebook-register-button" class="secondary-button auth-facebook">📘 Registrarme con Facebook</button>
+      <div class="auth-divider"><span>o usa tu correo</span></div>
+      <form id="register-form" class="auth-form">
+        <label>Correo electrónico<input id="register-email" type="email" autocomplete="email" required></label>
+        <label>Contraseña<input id="register-password" type="password" minlength="6" autocomplete="new-password" required></label>
+        <label>Confirmar contraseña<input id="register-confirm-password" type="password" minlength="6" autocomplete="new-password" required></label>
+        <button type="submit" class="primary-button">Crear mi cuenta</button>
+      </form>
+      <p id="register-message" class="auth-message"></p>
+      <button id="show-login-button" class="auth-link-button">Ya tengo una cuenta · Iniciar sesión</button>
+    </div>
+  </div>
+</div>
+</section>
+
+<section id="welcome-screen" class="screen"><div class="welcome-content"><div class="logo">✦</div><p class="eyebrow">TU PRIMER PASO</p><h1>No necesitas tener <span>una idea</span> para empezar.</h1><p class="description">Descubre qué podrías hacer con lo que tienes, encuentra oportunidades y empieza a probar un camino real.</p><button id="start-button" class="primary-button">🚀 Quiero empezar</button><p class="trust-text">Sin promesas falsas. Sin fórmulas mágicas. Solo el siguiente paso.</p></div></section>
+<section id="goal-screen" class="screen"><div class="screen-content"><div class="progress"><i class="progress-active"></i><i></i><i></i><i></i><i></i></div><p class="step">PASO 1 DE 5</p><h2>¿Qué te trae aquí?</h2><p class="question-description">Elige la opción que más se parezca a ti.</p><div class="options"><button class="option-card" onclick="selectGoal(this,'income')"><span class="option-icon">💰</span><span><strong>Necesito generar ingresos</strong><small>Quiero empezar a ganar dinero.</small></span></button><button class="option-card" onclick="selectGoal(this,'business')"><span class="option-icon">🚀</span><span><strong>Quiero empezar un negocio</strong><small>Quiero construir algo propio.</small></span></button><button class="option-card" onclick="selectGoal(this,'idea')"><span class="option-icon">💡</span><span><strong>Tengo una idea</strong><small>Pero no sé cómo comenzar.</small></span></button><button class="option-card" onclick="selectGoal(this,'stuck')"><span class="option-icon">📉</span><span><strong>Estoy estancado</strong><small>Ya tengo algo, pero no avanzo.</small></span></button><button class="option-card" onclick="selectGoal(this,'lost')"><span class="option-icon">🤷</span><span><strong>No sé qué hacer</strong><small>Pero quiero empezar.</small></span></button></div><button id="continue-button" class="primary-button disabled" onclick="nextFromGoal()">Continuar →</button></div></section>
+<section id="resources-screen" class="screen"><div class="screen-content"><div class="progress"><i class="progress-active"></i><i class="progress-active"></i><i></i><i></i><i></i></div><p class="step">PASO 2 DE 5</p><h2>¿Qué tienes disponible para empezar?</h2><p class="question-description">Puedes elegir varias opciones.</p><div class="options" id="resources-options"></div><button id="resources-continue" class="primary-button disabled" onclick="nextFromResources()">Continuar →</button></div></section>
+<section id="skills-screen" class="screen"><div class="screen-content"><div class="progress"><i class="progress-active"></i><i class="progress-active"></i><i class="progress-active"></i><i></i><i></i></div><p class="step">PASO 3 DE 5</p><h2>¿Qué sabes hacer o qué te gustaría aprender?</h2><p class="question-description">No tienes que ser experto.</p><div class="options" id="skills-options"></div><button id="skills-continue" class="primary-button disabled" onclick="nextFromSkills()">Continuar →</button></div></section>
+<section id="objective-screen" class="screen"><div class="screen-content"><div class="progress"><i class="progress-active"></i><i class="progress-active"></i><i class="progress-active"></i><i class="progress-active"></i><i></i></div><p class="step">PASO 4 DE 5</p><h2>¿Qué quieres conseguir primero?</h2><p class="question-description">Elige qué sería más importante para ti ahora.</p><div class="options" id="objective-options"></div><button id="objective-continue" class="primary-button disabled" onclick="nextFromObjective()">Continuar →</button></div></section>
+<section id="capacity-screen" class="screen"><div class="screen-content"><div class="progress"><i class="progress-active"></i><i class="progress-active"></i><i class="progress-active"></i><i class="progress-active"></i><i class="progress-active"></i></div><p class="step">PASO 5 DE 5</p><h2>¿Cuánto puedes dedicar para empezar?</h2><p class="question-description">Queremos recomendarte caminos que encajen con tu situación actual.</p><h3>⏰ Tiempo</h3><div class="options" id="time-options"></div><h3>💰 Capital</h3><div class="options" id="capital-options"></div><button id="capacity-continue" class="primary-button disabled" onclick="finishDiagnosis()">Analizar mi perfil →</button></div></section>
+<section id="results-screen" class="screen"><div class="screen-content results-content"><div class="results-header"><p class="eyebrow">TU ANÁLISIS</p><h2>Estas son tus mejores oportunidades</h2><p class="question-description">Estas opciones encajan mejor con tus respuestas.</p></div><div id="profile-result" class="profile-card"></div><div class="opportunities-heading"><span>🚀</span><h3>Caminos que podrías probar</h3></div><div id="opportunities-container" class="opportunities-container"></div><button class="secondary-button" onclick="showDashboard()">⌂ Ir al inicio</button><button class="primary-button" onclick="restartDiagnosis()">🔄 Volver a analizar</button></div></section>
+<section id="route-screen" class="screen"><div class="screen-content route-content"><button class="back-button" onclick="showDashboard()">← Volver al inicio</button><div class="route-header"><p class="eyebrow">TU RUTA COMIENZA AQUÍ</p><div id="route-icon" class="route-icon">🧭</div><h2 id="route-title"></h2><p id="route-description" class="question-description"></p></div><div class="route-goal-card">🎯<div><small>OBJETIVO DE ESTA RUTA</small><h3 id="route-goal"></h3></div></div><div class="route-progress-card"><div class="route-progress-top"><strong id="route-progress-text"></strong><strong id="route-progress-percent">0%</strong></div><div class="route-progress-bar"><div id="route-progress-fill"></div></div></div><div id="mission-card" class="mission-card"><div class="mission-header"><span id="mission-day"></span><span>ACTUAL</span></div><h3 id="mission-title"></h3><p id="mission-description"></p><div id="mission-interaction"></div><div id="mission-tip" class="mission-tip"></div><button class="primary-button" onclick="completeMission()">✓ Verificar y completar misión</button></div><div id="mission-completed" class="mission-completed hidden"><div class="completed-icon">🎉</div><h3>¡Misión completada!</h3><p>Tu respuesta fue guardada.</p><button class="primary-button" onclick="nextMission()">Continuar →</button></div></div></section>
+<section id="profile-screen" class="screen"><div class="screen-content profile-content"><button class="back-button" onclick="showDashboard()">← Volver al inicio</button><div class="profile-page-header"><div class="profile-avatar">👤</div><p class="eyebrow">TU PERFIL</p><h2>Mi perfil emprendedor</h2></div><div id="full-profile-content"></div><div class="security-card">🛡️<div><h3>Estado de tus datos</h3><p id="security-status"></p></div></div><button class="secondary-button" onclick="restartDiagnosis()">🔄 Volver a hacer el diagnóstico</button></div></section>
+<section id="admin-screen" class="screen"><div class="screen-content admin-content"><button class="back-button" onclick="showDashboard()">← Volver al inicio</button><div id="admin-content"></div></div></section><section id="help-screen" class="screen"><div class="screen-content help-content"><button class="back-button" onclick="showDashboard()">← Volver al inicio</button><div id="help-content"></div></div></section><section id="dashboard-screen" class="screen dashboard-screen"><div class="dashboard-shell"><header class="dashboard-header"><div><p class="dashboard-eyebrow">TU ESPACIO DE EMPRENDIMIENTO</p><h1 id="dashboard-greeting">Hola, emprendedor 👋</h1><p class="dashboard-subtitle">Tu siguiente paso no tiene que ser perfecto. Solo tiene que ser real.</p></div><div class="dashboard-header-actions"><button class="help-button" onclick="openHelpScreen()" title="Ayuda y reportes">❔</button><button class="profile-button" onclick="openProfileScreen()">👤</button></div></header><section class="dashboard-hero"><div><span class="status-pill">● RUTA ACTIVA</span><h2 id="dashboard-opportunity-name"></h2><p id="dashboard-opportunity-description"></p><button class="primary-button" onclick="openDashboardSection('route')">🎯 Continuar mi ruta →</button></div><div class="progress-ring-card"><div class="progress-ring"><span id="dashboard-progress-number">0%</span></div><small>Progreso de tu ruta</small></div></section><section class="dashboard-section"><div class="section-heading"><h2>Tu siguiente paso</h2><button class="text-button" onclick="openDashboardSection('route')">Ver ruta →</button></div><div class="mission-preview-card" onclick="openDashboardSection('route')">🎯<div><span class="mission-label">MISIÓN ACTUAL</span><h3 id="dashboard-mission-title"></h3><p id="dashboard-mission-description"></p></div>→</div></section><section class="dashboard-section"><h2>¿Qué quieres hacer?</h2><div class="dashboard-grid"><button class="dashboard-card" onclick="openDashboardSection('route')">🎯<strong>Mi ruta</strong><small>Continúa tu misión.</small></button><button class="dashboard-card" onclick="openDashboardSection('opportunities')">🚀<strong>Oportunidades</strong><small>Explora tus recomendaciones.</small></button><button class="dashboard-card" onclick="openDashboardSection('explore')">🌎<strong>Explorar</strong><small>Descubre nuevos caminos.</small></button><button class="dashboard-card" onclick="openProfileScreen()">👤<strong>Mi perfil</strong><small>Consulta tus respuestas e ID.</small></button><button class="dashboard-card" onclick="openHelpScreen()">❔<strong>Ayuda y reportes</strong><small>Reporta errores, ideas o usuarios.</small></button></div></section><section id="dashboard-content-area" class="dashboard-section"></section></div><nav class="bottom-navigation"><button class="nav-item active" data-section="home" onclick="openDashboardSection('home')">⌂<small>Inicio</small></button><button class="nav-item" data-section="route" onclick="openDashboardSection('route')">🎯<small>Mi ruta</small></button><button class="nav-item" data-section="opportunities" onclick="openDashboardSection('opportunities')">🚀<small>Oportunidades</small></button><button class="nav-item" data-section="explore" onclick="openDashboardSection('explore')">🌎<small>Explorar</small></button><button class="nav-item" data-section="help" onclick="openHelpScreen()">❔<small>Ayuda</small></button></nav></section>
+</main>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
+</script>
+</body></html>

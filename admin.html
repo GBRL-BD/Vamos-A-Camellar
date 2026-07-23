@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#6c63ff">
+<title>Emprende — CMS Administrativo</title>
+<link rel="stylesheet" href="style.css">
+<style>
+body{background:var(--bg,#f7f8fc)}
+.admin-shell{max-width:1200px;margin:auto;padding:22px}
+.admin-header{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:20px}
+.admin-header h1{margin:0}
+.admin-tabs{display:flex;gap:8px;overflow:auto;margin-bottom:18px}
+.admin-tabs button{border:0;border-radius:12px;padding:12px 16px;cursor:pointer;white-space:nowrap}
+.admin-tabs button.active{background:#6c63ff;color:white}
+.admin-card{background:var(--surface,#fff);border-radius:20px;padding:20px;margin-bottom:16px;box-shadow:0 8px 30px rgba(0,0,0,.06)}
+.admin-form{display:grid;gap:12px}
+.admin-form input,.admin-form textarea,.admin-form select{width:100%;box-sizing:border-box;padding:12px;border-radius:10px;border:1px solid #ddd;font:inherit}
+.admin-form textarea{min-height:100px;resize:vertical}
+.admin-form button,.primary{border:0;border-radius:12px;padding:13px 18px;cursor:pointer;background:#6c63ff;color:#fff;font-weight:700}
+.admin-list{display:grid;gap:10px}
+.admin-item{border:1px solid #eee;border-radius:14px;padding:14px;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.admin-actions{display:flex;gap:8px;flex-wrap:wrap}
+.admin-actions button{border:0;border-radius:8px;padding:8px 12px;cursor:pointer}
+.status{padding:4px 8px;border-radius:999px;background:#eee;font-size:12px}
+.muted{opacity:.7}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.stat{background:var(--surface,#fff);padding:18px;border-radius:16px}
+.stat strong{display:block;font-size:28px;margin-top:5px}
+@media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}.admin-header{align-items:flex-start;flex-direction:column}}
+.assignment-grid{display:grid;gap:10px;margin:14px 0}.assignment-row{display:grid;grid-template-columns:90px 1fr;gap:10px;align-items:center}.assignment-row label{font-weight:700}.assignment-row select{width:100%;box-sizing:border-box;padding:12px;border-radius:10px;border:1px solid #ddd;font:inherit}@media(max-width:600px){.assignment-row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="admin-shell">
+  <div class="admin-header">
+    <div>
+      <div class="section-eyebrow">EMPRENDE</div>
+      <h1>Panel de administración</h1>
+      <p class="muted">Gestiona el contenido y la comunidad sin editar el código.</p>
+    </div>
+    <button class="primary" id="back-app">Volver a la aplicación</button>
+  </div>
+
+  <div id="admin-auth" class="admin-card"><h2>Comprobando permisos...</h2></div>
+
+  <div id="admin-content" hidden>
+    <div id="stats" class="stats"></div>
+
+    <div class="admin-tabs">
+      <button class="active" data-tab="opportunities">Oportunidades</button>
+      <button data-tab="missions">Misiones</button>
+      <button data-tab="users">Usuarios</button>
+      <button data-tab="evidence">Evidencias</button>
+      <button data-tab="reports">Reportes</button>
+      <button data-tab="actions">Moderación</button>
+    </div>
+
+    <section id="tab-opportunities" class="admin-tab">
+      <div class="admin-card">
+        <h2>Crear oportunidad</h2>
+        <form id="opportunity-form" class="admin-form">
+          <input id="opp-id" type="hidden">
+          <input id="opp-title" required placeholder="Nombre de la oportunidad">
+          <textarea id="opp-description" required placeholder="Descripción"></textarea>
+          <input id="opp-category" placeholder="Categoría">
+          <input id="opp-icon" placeholder="Icono o emoji">
+          <button type="submit">Guardar oportunidad</button>
+          <button type="button" id="opp-cancel" hidden>Cancelar edición</button>
+        </form>
+      </div>
+      <div class="admin-card"><h2>Oportunidades</h2><div id="opportunities-list" class="admin-list"></div></div>
+    </section>
+
+    <section id="tab-missions" class="admin-tab" hidden>
+      <div class="admin-card">
+        <h2>Crear misión</h2>
+        <form id="mission-form" class="admin-form">
+          <input id="mission-id" type="hidden">
+          <input id="mission-title" required placeholder="Título de la misión">
+          <textarea id="mission-description" required placeholder="Descripción"></textarea>
+          <input id="mission-day" type="number" min="1" max="7" required placeholder="Día (1-7)">
+          <input id="mission-type" placeholder="Tipo de misión">
+          <input id="mission-opportunity" placeholder="ID de oportunidad (opcional)">
+          <button type="submit">Guardar misión</button>
+          <button type="button" id="mission-cancel" hidden>Cancelar edición</button>
+        </form>
+      </div>
+      <div class="admin-card"><h2>Misiones</h2><div id="missions-list" class="admin-list"></div></div><div class="admin-card">
+<h2>Asignar las 7 misiones a una oportunidad</h2>
+<p class="muted">Selecciona una oportunidad y asigna visualmente una misión a cada día.</p>
+<div class="admin-form">
+<select id="assign-opportunity"><option value="">Selecciona una oportunidad</option></select>
+<div id="mission-assignment-grid"></div>
+<button type="button" id="save-mission-assignment">Guardar ruta de 7 días</button>
+</div>
+</div>
+    </section>
+
+    <section id="tab-users" class="admin-tab" hidden>
+      <div class="admin-card"><h2>Usuarios</h2><div id="users-list" class="admin-list"></div></div>
+    </section>
+
+    <section id="tab-evidence" class="admin-tab" hidden>
+      <div class="admin-card"><h2>Evidencias pendientes</h2><div id="evidence-list" class="admin-list"></div></div>
+    </section>
+
+    <section id="tab-reports" class="admin-tab" hidden>
+      <div class="admin-card"><h2>Reportes</h2><div id="reports-list" class="admin-list"></div></div>
+    </section>
+
+    <section id="tab-actions" class="admin-tab" hidden>
+      <div class="admin-card"><h2>Acciones de moderación</h2><div id="actions-list" class="admin-list"></div></div>
+    </section>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script src="backend-client.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>
